@@ -1,0 +1,15 @@
+{  
+  "_id": "235235",
+  "device_id": "station-01",
+  "timestamp": "utc",
+  "data": {
+    "temperature": 26.4,
+    "humidity": 61,
+    "soil_moisture": 432,
+    "gas_level": 230,
+    "ph_value": 6.7,
+    "soil_temperature": 23.5,
+    "light_intensity": 320
+  },
+  "prediction": 34
+}
