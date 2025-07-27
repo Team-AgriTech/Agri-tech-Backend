@@ -72,28 +72,43 @@ def save_data():
     """
     This is save_data route which takes a json in body and store sensor data.
     Expected Json body: {
-    humidity : float
-    temperature : float
-    soil_moisture : float
+    device_id: string
+    data: {
+        humidity : float
+        temperature : float
+        soil_moisture : float
+        // ... other sensor fields
+    }
     }
     Response : {
     status : string
     }
     """
     try:
-        data = request.get_json()
+        request_data = request.get_json()
         
-        # Validate required fields
+        # Extract device_id and sensor data
+        device_id = request_data.get('device_id')
+        sensor_data = request_data.get('data', {})
+        
+        if not device_id:
+            return jsonify({'status': 'failed', 'error': 'Missing device_id'}), 400
+        
+        # Validate required sensor fields
         required_fields = ['humidity', 'temperature', 'soil_moisture']
         for field in required_fields:
-            if field not in data:
-                return jsonify({'status': 'failed', 'error': f'Missing field: {field}'}), 400
+            if field not in sensor_data:
+                return jsonify({'status': 'failed', 'error': f'Missing field: data.{field}'}), 400
         
-        # Add timestamp and prediction
-        data['timestamp'] = datetime.now(timezone.utc).isoformat()
-        data['prediction'] = ai.predict_flammability(data)
+        # Create the document to save (matching your schema)
+        document = {
+            'device_id': device_id,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'data': sensor_data,
+            'prediction': ai.predict_flammability(sensor_data)
+        }
         
-        if db.save_data(data):
+        if db.save_data(document):
             return jsonify({'status': 'success'})
         else:
             return jsonify({'status': 'failed'}), 500
