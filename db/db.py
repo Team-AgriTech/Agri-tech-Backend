@@ -25,7 +25,7 @@ def save_data(data):
 
 
 def get_all_data():
-    result = data_collection.find({}).sort("timestamp", -1)
+    result = data_collection.find({}).sort("_id", -1)
     documents = list(result)
     # Convert ObjectId to string for JSON serialization
     for doc in documents:
@@ -35,13 +35,40 @@ def get_all_data():
 
 
 def get_current_data():
-    latest_record = data_collection.find().sort("timestamp", -1).limit(1)
+    print("=== DEBUGGING get_current_data ===")
+    
+    # Get all documents and show their _id and timestamp
+    all_docs = list(data_collection.find({}, {"_id": 1, "timestamp": 1, "device_id": 1}).sort("_id", -1).limit(5))
+    print("Top 5 documents sorted by _id (newest first):")
+    for i, doc in enumerate(all_docs):
+        print(f"  {i+1}. _id: {doc['_id']} | timestamp: {doc.get('timestamp')} | device: {doc.get('device_id')}")
+    
+    # Also try sorting by timestamp
+    all_docs_by_time = list(data_collection.find({}, {"_id": 1, "timestamp": 1, "device_id": 1}).sort("timestamp", -1).limit(5))
+    print("\nTop 5 documents sorted by timestamp (newest first):")
+    for i, doc in enumerate(all_docs_by_time):
+        print(f"  {i+1}. _id: {doc['_id']} | timestamp: {doc.get('timestamp')} | device: {doc.get('device_id')}")
+    
+    # Get what we're actually returning
+    latest_record = data_collection.find().sort("_id", -1).limit(1)
     documents = list(latest_record)
+    
+    print(f"\n=== RETURNING ===")
+    if documents:
+        print(f"Returning document:")
+        print(f"  _id: {documents[0]['_id']}")
+        print(f"  timestamp: {documents[0].get('timestamp')}")
+        print(f"  device_id: {documents[0].get('device_id')}")
+    else:
+        print("No documents found!")
+    
     # Convert ObjectId to string for JSON serialization
     for doc in documents:
         if '_id' in doc:
             doc['_id'] = str(doc['_id'])
+    
     return documents
+
 
 
 ## CHATS
